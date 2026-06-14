@@ -56,3 +56,26 @@ class OrderAPITests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) > 0)
+
+    def test_inventory_cache_invalidation_on_order(self):
+        from django.core.cache import cache
+        inventory_url = reverse('store-inventory-list', kwargs={'store_id': self.store.id})
+        order_url = reverse('order-create')
+
+        # 1. Hit the inventory endpoint to populate the cache
+        self.client.get(inventory_url)
+        
+        # Verify the cache exists
+        cache_key = f'inventory_store_{self.store.id}'
+        self.assertIsNotNone(cache.get(cache_key))
+
+        # 2. Make an order that successfully deducts inventory
+        data = {
+            'store_id': self.store.id,
+            'items': [{'product_id': self.product.id, 'quantity_requested': 1}]
+        }
+        response = self.client.post(order_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # 3. Verify the cache was instantly deleted (invalidated)
+        self.assertIsNone(cache.get(cache_key))

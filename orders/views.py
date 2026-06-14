@@ -61,6 +61,14 @@ class OrderCreateAPIView(views.APIView):
                 OrderItem.objects.bulk_create(order_items_to_create)
                 order.status = Order.StatusChoices.CONFIRMED
                 order.save()
+                
+                # Invalidate the cache for this store since inventory changed
+                from django.core.cache import cache
+                cache.delete(f'inventory_store_{store.id}')
+                
+                # Trigger Celery Background Task
+                from .tasks import send_order_confirmation
+                send_order_confirmation.delay(order.id)
 
         return Response({
             "order_id": order.id,
