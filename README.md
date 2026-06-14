@@ -44,6 +44,31 @@ A backend module for an inventory management system built with Django and Django
 | `GET` | `/api/search/products/` | Search global products (e.g., `?q=laptop&min_price=100&sort=price`). |
 | `GET` | `/api/search/suggest/` | Autocomplete search for products (e.g., `?q=Pho`). |
 
+### Testing the APIs (Example Requests)
+Because there is no frontend, you can use the built-in Django REST Framework Browsable API (by clicking the links in your browser), Postman, or cURL to test the endpoints.
+
+**1. Find a valid product to order:**
+First, hit the search API to find a product and see which store has it in stock:
+`GET http://localhost:8000/api/search/products/?q=a`
+
+**2. Create an Order:**
+Navigate to `http://localhost:8000/orders/` in your browser. In the "Content" box at the bottom, submit a JSON payload using the `store_id` and `product_id` you found above. Example payload:
+```json
+{
+    "store_id": 1,
+    "items": [
+        {
+            "product_id": 5,
+            "quantity_requested": 2
+        }
+    ]
+}
+```
+*(Note: Check the terminal running `docker-compose` to see the Celery background task execute in real-time upon a successful order!)*
+
+**3. Check Cache Invalidation:**
+Visit `http://localhost:8000/stores/1/inventory/` before and after placing an order. The first load caches the data in Redis; after an order is successfully placed, the cache is instantly invalidated and fetches the newly deducted inventory.
+
 ## Approach & Assumptions
 
 **Approach:**
