@@ -44,7 +44,14 @@ A backend module for an inventory management system built with Django and Django
 | `GET` | `/api/search/products/` | Search global products (e.g., `?q=laptop&min_price=100&sort=price`). |
 | `GET` | `/api/search/suggest/` | Autocomplete search for products (e.g., `?q=Pho`). |
 
-## Implementation Notes
-- **Data Consistency:** Uses `transaction.atomic()` during order creation to ensure data integrity.
-- **Queries:** Uses `select_related` and `annotate` to optimize database queries.
-- **Ports:** PostgreSQL and Redis host ports are intentionally not exposed in `docker-compose.yml` to prevent conflicts with local services.
+## Approach & Assumptions
+
+**Approach:**
+- **Data Consistency:** Used `transaction.atomic()` and `select_for_update()` during order creation to ensure data integrity and prevent race conditions.
+- **Queries:** Used `select_related` and `annotate` to optimize database queries and eliminate N+1 issues.
+- **Ports:** PostgreSQL and Redis host ports are intentionally not exposed in `docker-compose.yml` to prevent conflicts with local services. The containers communicate internally.
+
+**Assumptions:**
+- **Partial Fulfillment:** It is assumed that orders must be fulfilled entirely. If any product in an order lacks sufficient stock, the entire order is rejected rather than partially fulfilled.
+- **Seed Data:** The `seed_data` script assumes a completely fresh database and randomly generates names/prices.
+- **Cache Lifecycle:** It is assumed that inventory only changes via the `POST /orders/` endpoint, so cache invalidation is strictly tied to successful order creation.
