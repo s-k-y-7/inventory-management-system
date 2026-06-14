@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=inventory_management_system_db
+      - POSTGRES_USER=sky-
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust # easy dev setup
+
+  redis:
+    image: redis:7
+
+  web:
+    build: .
+    # The command waits for DB, runs migrations, and starts the server
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_HOST=db
+      - DB_USER=sky-
+      - DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+
+  celery:
+    build: .
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=sky-
+      - DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+
+volumes:
+  postgres_data:
