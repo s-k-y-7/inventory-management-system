@@ -8,8 +8,10 @@ from stores.models import Store, Inventory
 from products.models import Product
 from .models import Order, OrderItem
 from .serializers import OrderCreateSerializer, OrderListSerializer
+from drf_spectacular.utils import extend_schema
 
 class OrderCreateAPIView(views.APIView):
+    @extend_schema(request=OrderCreateSerializer)
     def post(self, request, *args, **kwargs):
         serializer = OrderCreateSerializer(data=request.data)
         if not serializer.is_valid():

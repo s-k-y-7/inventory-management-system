@@ -7,6 +7,8 @@ from django.db.models.functions import Coalesce
 from products.models import Product
 from stores.models import Inventory
 from .serializers import ProductSearchSerializer
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -17,6 +19,20 @@ class ProductSearchAPIView(generics.ListAPIView):
     serializer_class = ProductSearchSerializer
     pagination_class = StandardResultsSetPagination
     
+    @extend_schema(
+        parameters=[
+            OpenApiParameter('q', OpenApiTypes.STR, description='Search keyword'),
+            OpenApiParameter('category', OpenApiTypes.STR, description='Category name'),
+            OpenApiParameter('min_price', OpenApiTypes.DECIMAL, description='Minimum price'),
+            OpenApiParameter('max_price', OpenApiTypes.DECIMAL, description='Maximum price'),
+            OpenApiParameter('store_id', OpenApiTypes.INT, description='Store ID for inventory filter'),
+            OpenApiParameter('in_stock', OpenApiTypes.BOOL, description='Filter strictly in-stock products'),
+            OpenApiParameter('sort', OpenApiTypes.STR, description='Sort field (price, -price, newest, relevance)'),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['store_id'] = self.request.query_params.get('store_id')
@@ -87,6 +103,12 @@ class ProductSearchAPIView(generics.ListAPIView):
         return queryset
 
 class AutocompleteAPIView(APIView):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter('q', OpenApiTypes.STR, description='Prefix search term', required=True),
+        ],
+        responses={200: OpenApiTypes.ANY}
+    )
     def get(self, request, *args, **kwargs):
         q = request.query_params.get('q', '')
         if len(q) < 3:

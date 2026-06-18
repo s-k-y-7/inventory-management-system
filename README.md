@@ -8,6 +8,7 @@ A backend module for an inventory management system built with Django and Django
 - **Inventory & Search:** Endpoints for inventory listing, product search (with filtering/sorting), and autocomplete.
 - **Caching:** Redis caching for inventory listings, with cache invalidation upon order creation.
 - **Async Tasks:** Celery worker for handling background tasks (e.g., simulating order confirmation emails).
+- **API Documentation:** Interactive OpenAPI 3.0 schemas generated automatically via `drf-spectacular` (Swagger UI / ReDoc).
 - **Docker:** Configured with `docker-compose` for local development.
 
 ## Prerequisites
@@ -44,8 +45,11 @@ A backend module for an inventory management system built with Django and Django
 | `GET` | `/api/search/products/` | Search global products (e.g., `?q=laptop&min_price=100&sort=price`). |
 | `GET` | `/api/search/suggest/` | Autocomplete search for products (e.g., `?q=Pho`). |
 
-### Testing the APIs (Example Requests)
-Because there is no frontend, you can use the built-in Django REST Framework Browsable API (by clicking the links in your browser), Postman, or cURL to test the endpoints.
+### API Documentation & Testing
+Because there is no frontend, you can interact with the API using our built-in Swagger UI or the standard Browsable API.
+
+**Interactive Swagger UI:**
+Navigate to `http://localhost:8000/api/schema/swagger-ui/` in your browser. This interactive webpage documents all available endpoints, required payload schemas, and query parameters. You can test all APIs directly from this page using the "Try it out" button.
 
 **1. Find a valid product to order:**
 First, hit the search API to find a product and see which store has it in stock:

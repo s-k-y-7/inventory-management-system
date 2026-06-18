@@ -39,6 +39,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "rest_framework",
+    "drf_spectacular",
     "products",
     "stores",
     "orders",
@@ -80,6 +81,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Inventory Management API',
+    'DESCRIPTION': 'API for Inventory Management System',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
